@@ -8,6 +8,7 @@ mydata <- as.matrix(data.frame(x, y))
 
 # INITIALISE FUNCTIONS AND VARS
 niter <- 1000
+alpha <- 0.1
 
 sig <- function(x){
   return(1/(1+exp(-x)))
@@ -22,7 +23,7 @@ loss <- function(yhat){
 }
 
 loss.prime <- function(yhat){
-  return(-(y - yhat))
+  return((y - yhat))
 } 
 
 #######################################
@@ -50,7 +51,6 @@ loss.prime <- function(yhat){
 set.seed(123)
 w1 <- matrix(runif(3), ncol = 3) 
 w2 <- matrix(runif(3), ncol = 3) 
-# l2 <- matrix(0,nrow = 3, ncol = dim(mydata)[1])
 
 # Each node in the hidden layer will calculate the dot product of inputs and their weights.
 # These are not summed in this example because we're only calculating a single input, therefore 
@@ -59,7 +59,19 @@ l2 <- sig(mydata[,1] %*% w1)
 # Multiply each column in l2 by the column element in w2
 l3 <- sweep(l2, 2, w2, "*")
 # take the sum of each row in l3 and apply sigmoid - output from forward pass is done!
-l3 <- sig(rowSums(l3)) 
+l3s <- rowSums(l3)
+l3a <- sig(l3s)
+
+## BACK PROPAGATION ##
+
+# repeat n times till convergance 
+for(i in c(1:niter)){
+  dw2 <- 
+  
+  
+}
+
+
 
 
 
