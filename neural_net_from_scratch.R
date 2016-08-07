@@ -23,23 +23,24 @@ loss <- function(yhat){
 }
 
 loss.prime <- function(yhat){
-  return((y - yhat))
+  return(y - yhat)
 } 
 
 #######################################
 #
 # setup a [(1),(3),(1)] NN
 # 
+#   l1          l2             l3
 #              +---+
 #         +----+z1 +----+
 #         |    +---+    |
 #         |             |
-#         |             |
+#         w11           w21    
 # +---+   |    +---+    |    +---+
 # | x +--------+z2 +---------+ y |
 # +---+   |    +---+    |    +---+
 #         |             |
-#         |             |
+#         w12           w22
 #         |    +---+    |
 #         +----+z3 +----+
 #              +---+
@@ -49,24 +50,27 @@ loss.prime <- function(yhat){
 
 # init weights and layers
 set.seed(123)
-w1 <- matrix(runif(3), ncol = 3) 
-w2 <- matrix(runif(3), ncol = 3) 
+w1 <- matrix(runif(3,-1,1), ncol = 3) 
+w2 <- matrix(runif(3,-1,1), ncol = 3) 
 
 # Each node in the hidden layer will calculate the dot product of inputs and their weights.
 # These are not summed in this example because we're only calculating a single input, therefore 
 # every node only recieves a single weight.
-l2 <- sig(mydata[,1] %*% w1)
+l2a <- sig(mydata[,1] %*% w1)
 # Multiply each column in l2 by the column element in w2
-l3 <- sweep(l2, 2, w2, "*")
+l3s <- sweep(l2a, 2, w2, "*")
 # take the sum of each row in l3 and apply sigmoid - output from forward pass is done!
-l3s <- rowSums(l3)
+l3s <- rowSums(l3s)
+# take the sigmoid activation of the output layer
 l3a <- sig(l3s)
 
 ## BACK PROPAGATION ##
 
 # repeat n times till convergance 
 for(i in c(1:niter)){
-  dw2 <- 
+  # derivative of error with respect to w2
+  l3_error <- loss.prime(l3a) * sig.prime(l3a)
+  l2_error <- t(t(w2) %*% l3_error) * sig.prime(l2a)
   
   
 }
