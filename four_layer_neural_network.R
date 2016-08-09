@@ -1,5 +1,6 @@
 x <- mtcars$disp/max(mtcars$disp)
 y <- mtcars$cyl/max(mtcars$cyl)
+mydata <- data.frame(x, y)
 
 #mydata <- data.frame(x1 = x$x1, x2 = x$x2, y)
 
@@ -11,7 +12,7 @@ y <- mtcars$cyl/max(mtcars$cyl)
 # x <- x/max(x)
 # y <- y/max(y)
 
-alpha <- 0.7
+alpha <- 0.01
 
 #set.seed(1234)
 syn0 <- matrix(runif(5), nrow = 1, ncol = 5) # 1 by 3
@@ -30,12 +31,17 @@ loss.prime <- function(y_hat){
     return(-(y - y_hat))
 }
 
+entropy.prime <- function(y_hat){
+    return((y_hat - y)/(y_hat*(1 - y_hat)))
+}
+
 for(i in c(1:1000000)){
     l1 <- sig(x %*% syn0)
     l2 <- sig(l1 %*% syn1)
     l3 <- sig(l2 %*% syn2)
     
-    l3_delta <- loss.prime(l3) * sig.prime(l3)
+    #l3_delta <- loss.prime(l3) * sig.prime(l3)
+    l3_delta <- entropy.prime(l3) * sig.prime(l3)
     l2_delta <- (l3_delta %*% t(syn2)) * sig.prime(l2)
     l1_delta <- (l2_delta %*% t(syn1)) * sig.prime(l1)
     
