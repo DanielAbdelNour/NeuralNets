@@ -3,15 +3,17 @@
 ########################
 
 # TEMP VARS #
-hidden.layers <- c(5,4,3)
-x <- mtcars$disp/max(mtcars$disp)
-y <- mtcars$cyl/max(mtcars$cyl)
-alpha <- 0.1
-max.iter <- 100000
+# hidden.layers <- c(5,4,3)
+# x <- mtcars$disp/max(mtcars$disp)
+# y <- mtcars$cyl/max(mtcars$cyl)
+# alpha <- 0.1
+# max.iter <- 100000
 # x <- matrix(runif(10,-1,1),nrow = 5, ncol =2)
 # # # # # # 
 
 dan.net <- function(x, y, hidden.layers = c(3,2), cost.function = "sse", alpha = 0.1, max.iter = 100000){
+    x <- x/max(x)
+    y <- y/max(y)
     x <- as.matrix(x)
     y <- as.matrix(y)
     # initialise required functions
@@ -63,7 +65,6 @@ dan.net <- function(x, y, hidden.layers = c(3,2), cost.function = "sse", alpha =
       }
       
       # BACKPROPAGATION #
-      
       for(r in c((n.hl + 1):1)){
         # compute the derivative of the loss function at the output later else compute hidden layers
         if(r == (n.hl + 1))
@@ -82,6 +83,9 @@ dan.net <- function(x, y, hidden.layers = c(3,2), cost.function = "sse", alpha =
         print(paste(abs(sum(y - l[[length(l)]])), " : ", (i/max.iter) * 100))
       }
     }
+    
+    net.result <- l[[length(l)]]
+    return(net.result)
 }
 
 
