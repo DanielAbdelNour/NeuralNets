@@ -3,13 +3,15 @@
 ########################
 
 # TEMP VARS #
-hidden.layers <- c(3,2)
-x <- mtcars$mpg/max(mtcars$mpg)
-x <- matrix(runif(10,-1,1),nrow = 5, ncol =2)
+# hidden.layers <- c(3,2)
+mx <- mtcars$mpg/max(mtcars$mpg)
+my <- mtcars$hp/max(mtcars$hp)
+# x <- matrix(runif(10,-1,1),nrow = 5, ncol =2)
 # # # # # # 
 
 dan.net <- function(x, y, hidden.layers = c(3,2), cost.function = "sse", alpha = 0.1, max.iter = 100000){
     x <- as.matrix(x)
+    y <- as.matrix(y)
     # initialise required functions
     sig <- function(x){
         return(1/(1 + exp(-x)))
@@ -61,23 +63,21 @@ dan.net <- function(x, y, hidden.layers = c(3,2), cost.function = "sse", alpha =
       # BACKPROPAGATION #
       
       for(r in c((n.hl + 1):1)){
-        # compute the derivative of the loss function at the output later
+        # compute the derivative of the loss function at the output later else compute hidden layers
         if(r == (n.hl + 1))
-          delta[[r]] <- cross.entropy.prime(l[[r]]) * sig.prime(l[[r]])
+          delta[[r]] <- cross.entropy.prime(l[[(r + 1)]]) * sig.prime(l[[(r + 1)]])
         else
-          delta[[r]] <- (delta[[(r + 1)]] %*% t(wts[[r]])) * sig.prime(l[[r]])
+          delta[[r]] <- (delta[[(r + 1)]] %*% t(wts[[(r + 1)]])) * sig.prime(l[[(r + 1)]])
       }
       
-      l3_delta <- entropy.prime(l3) * sig.prime(l3)
-      l2_delta <- (l3_delta %*% t(syn2)) * sig.prime(l2)
-      l1_delta <- (l2_delta %*% t(syn1)) * sig.prime(l1)
+      # update weights using gradient descent
+      for(t in c((n.hl + 1):1)){
+          wts[[t]] <- wts[[t]] - (alpha * t(l[[t]]) %*% delta[[t]])
+      }
       
-      syn2 <- syn2 - (alpha * t(l2) %*% l3_delta)
-      syn1 <- syn1 - (alpha * t(l1) %*% l2_delta)
-      syn0 <- syn0 - (alpha * t(x) %*% l1_delta)
-      
+      # output progress showing absolute error at % of completion
       if(i %% 1000 == 0){
-        print(paste(abs(sum(y - l2)), " : ", (i/1000000) * 100))
+        print(paste(abs(sum(y - l[[(n.hl + 1)]])), " : ", (i/max.iter) * 100))
       }
     }
 }
