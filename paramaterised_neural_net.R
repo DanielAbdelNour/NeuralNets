@@ -3,13 +3,13 @@
 ########################
 
 # TEMP VARS #
-# hidden.layers <- c(5,4,3)
-# x <- mtcars$disp/max(mtcars$disp)
-# y <- mtcars$cyl/max(mtcars$cyl)
-# alpha <- 0.1
-# max.iter <- 100000
+hidden.layers <- c(3,2)
+x <- mtcars$mpg/max(mtcars$mpg)
+y <- mtcars$disp/max(mtcars$disp)
+alpha <- 0.1
+max.iter <- 2
 # x <- matrix(runif(10,-1,1),nrow = 5, ncol =2)
-# # # # # # 
+# # # # # # # 
 
 dan.net <- function(x, y, hidden.layers = c(3,2), cost.function = "sse", alpha = 0.1, max.iter = 100000){
     x <- x/max(x)
@@ -39,6 +39,18 @@ dan.net <- function(x, y, hidden.layers = c(3,2), cost.function = "sse", alpha =
     # init delta list for the derivatives of each layer
     delta <- list()
     
+    # init bias nodes
+    bias <- list()
+    ones <- matrix(1, nrow = dim(x)[1])
+    
+    for (b in c(1:(n.hl + 1))){
+      # make sure we only add one node to output layer
+      if(b == (n.hl + 1))
+        bias[[b]] <- ones %*% matrix(runif(1, -1, 1), nrow = 1, ncol = 1)
+      else
+        bias[[b]] <- ones %*% matrix(runif(hidden.layers[b] * 1, -1, 1), nrow = 1, ncol = hidden.layers[b])
+    }
+    
     # init weights and layers
     l <- list()
     l[[1]] <- x
@@ -59,9 +71,11 @@ dan.net <- function(x, y, hidden.layers = c(3,2), cost.function = "sse", alpha =
     for(i in c(1:max.iter)){
       
       # FORWARD PASS #
-      # apply the activiation function to the dot product of layers and corrosponding weights
+      # apply the activiation function to the dot product of layers and corrosponding weights and add bias (via sweep)
       for(q in c(1:(n.hl + 1))){
-        l[[(q + 1)]] <- sig(l[[q]] %*% wts[[q]])
+        #wtsum <- l[[q]] %*% wts[[q]]
+        #wtsum <- sweep(wtsum, 2, bias[[q]], "+") 
+        l[[(q + 1)]] <- sig((l[[q]] %*% wts[[q]]) + bias[[q]])
       }
       
       # BACKPROPAGATION #
@@ -76,6 +90,8 @@ dan.net <- function(x, y, hidden.layers = c(3,2), cost.function = "sse", alpha =
       # update weights using gradient descent
       for(t in c((n.hl + 1):1)){
           wts[[t]] <- wts[[t]] - (alpha * t(l[[t]]) %*% delta[[t]])
+          
+          bias[[t]] <- bias[[t]] - (alpha * delta[[t]])
       }
       
       # output progress showing absolute error at % of completion
