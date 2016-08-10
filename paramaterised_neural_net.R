@@ -3,15 +3,20 @@
 ########################
 
 # TEMP VARS #
-hidden.layers <- c(3,2)
+hidden.layers <- c(10,7,8)
 x <- mtcars$mpg/max(mtcars$mpg)
 y <- mtcars$disp/max(mtcars$disp)
+
+x <- seq(0,40,0.1)
+y <- sin(x) + 1
+
 alpha <- 0.1
-max.iter <- 2
+max.iter <- 10000
+add.bias <- T
 # x <- matrix(runif(10,-1,1),nrow = 5, ncol =2)
 # # # # # # # 
 
-dan.net <- function(x, y, hidden.layers = c(3,2), cost.function = "sse", alpha = 0.1, max.iter = 100000){
+dan.net <- function(x, y, hidden.layers = c(3,2), cost.function = "sse", alpha = 0.1, max.iter = 100000, add.bias = T){
     x <- x/max(x)
     y <- y/max(y)
     x <- as.matrix(x)
@@ -51,18 +56,21 @@ dan.net <- function(x, y, hidden.layers = c(3,2), cost.function = "sse", alpha =
         bias[[b]] <- ones %*% matrix(runif(hidden.layers[b] * 1, -1, 1), nrow = 1, ncol = hidden.layers[b])
     }
     
+    if(!add.bias)
+      bias <- lapply(bias, function(x){x*0})
+    
     # init weights and layers
     l <- list()
     l[[1]] <- x
     wts <- list()
-    wt0 <- matrix(runif(dim(x)[2] * hidden.layers[1]), nrow = dim(x)[2], ncol = hidden.layers[1])
+    wt0 <- matrix(runif(dim(x)[2] * hidden.layers[1], -1, 1), nrow = dim(x)[2], ncol = hidden.layers[1])
     wts[[1]] <- wt0
     
     for(p in c(1:(n.hl))){
         if(!is.na(hidden.layers[(p + 1)]))
-            wtn <- matrix(runif(hidden.layers[p] * hidden.layers[(p + 1)]), nrow = hidden.layers[p], ncol =  hidden.layers[(p + 1)])
+            wtn <- matrix(runif(hidden.layers[p] * hidden.layers[(p + 1)], -1, 1), nrow = hidden.layers[p], ncol =  hidden.layers[(p + 1)])
         else
-            wtn <- matrix(runif(hidden.layers[p] * 1), nrow = hidden.layers[p], ncol = 1)
+            wtn <- matrix(runif(hidden.layers[p] * 1, -1, 1), nrow = hidden.layers[p], ncol = 1)
         
         wts[[(p+1)]] <- wtn
     }
@@ -76,6 +84,7 @@ dan.net <- function(x, y, hidden.layers = c(3,2), cost.function = "sse", alpha =
         #wtsum <- l[[q]] %*% wts[[q]]
         #wtsum <- sweep(wtsum, 2, bias[[q]], "+") 
         l[[(q + 1)]] <- sig((l[[q]] %*% wts[[q]]) + bias[[q]])
+        #l[[(q + 1)]] <- sig((l[[q]] %*% wts[[q]]))
       }
       
       # BACKPROPAGATION #
@@ -91,7 +100,8 @@ dan.net <- function(x, y, hidden.layers = c(3,2), cost.function = "sse", alpha =
       for(t in c((n.hl + 1):1)){
           wts[[t]] <- wts[[t]] - (alpha * t(l[[t]]) %*% delta[[t]])
           
-          bias[[t]] <- bias[[t]] - (alpha * delta[[t]])
+          if(add.bias)
+            bias[[t]] <- bias[[t]] - (alpha * delta[[t]])
       }
       
       # output progress showing absolute error at % of completion
